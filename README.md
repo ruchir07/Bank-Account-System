@@ -137,3 +137,84 @@ BankAccountSystem.menu(3, 'E001', null, 'alice.new@company.com', null, null);
 ```
 BankAccountSystem.menu(4, 'E002', null, null, null, null);
 ```
+
+## Step 5: (Optional Bonus) Visualforce Page GUI
+1. Create the Apex Controller 
+If your examiner asks for a User Interface instead of a console log, follow these steps to turn it into a web page.
+Developer Console -> File -> New -> Apex Class. Name it CustomerUIController.
+
+```
+public class CustomerUIController {
+    public Customer__c cust { get; set; }
+    public String searchEmpId { get; set; }
+    public List<Customer__c> customerList { get; set; }
+    
+    public CustomerUIController() {
+        cust = new Customer__c();
+        loadCustomers();
+    }
+    
+    public void loadCustomers() {
+        customerList = [SELECT Emp_ID__c, Name, Email__c, Department__c FROM Customer__c ORDER BY CreatedDate DESC];
+    }
+    
+    public PageReference saveCustomer() {
+        try {
+            insert cust;
+            cust = new Customer__c(); // Clear form
+            loadCustomers(); // Refresh list
+        } catch(Exception e) {
+            ApexPages.addMessages(e);
+        }
+        return null;
+    }
+    
+    public PageReference deleteCustomer() {
+        if(String.isNotBlank(searchEmpId)) {
+            List<Customer__c> toDelete = [SELECT Id FROM Customer__c WHERE Emp_ID__c = :searchEmpId LIMIT 1];
+            if(!toDelete.isEmpty()) {
+                delete toDelete;
+                loadCustomers();
+            }
+        }
+        return null;
+    }
+}
+```
+2. Create the Visualforce Page
+Developer Console -> File -> New -> Apex Class. Name it CustomerUIController.
+```
+<apex:page controller="CustomerUIController" docType="html-5.0">
+    <apex:form >
+        <apex:pageMessages />
+        
+        <apex:pageBlock title="Bank Account System">
+            <apex:pageBlockSection title="Add New Customer" columns="2">
+                <apex:inputField value="{!cust.Emp_ID__c}" required="true"/>
+                <apex:inputField value="{!cust.Name}" required="true"/>
+                <apex:inputField value="{!cust.Email__c}"/>
+                <apex:inputField value="{!cust.Department__c}"/>
+                <apex:inputField value="{!cust.Birth_Date__c}"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Save Customer" action="{!saveCustomer}"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        
+        <apex:pageBlock title="Delete Customer">
+            <apex:outputLabel value="Enter Emp ID to Delete: " />
+            <apex:inputText value="{!searchEmpId}"/>
+            <apex:commandButton value="Delete" action="{!deleteCustomer}" style="margin-left:10px;"/>
+        </apex:pageBlock>
+        
+        <apex:pageBlock title="All Customers">
+            <apex:pageBlockTable value="{!customerList}" var="c">
+                <apex:column value="{!c.Emp_ID__c}" headerValue="Emp ID"/>
+                <apex:column value="{!c.Name}" headerValue="Name"/>
+                <apex:column value="{!c.Email__c}" headerValue="Email"/>
+                <apex:column value="{!c.Department__c}" headerValue="Department"/>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
+```
