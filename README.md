@@ -1,6 +1,4 @@
-# Salesforce Bank Account System - Practical Assignment
-
-This guide provides a complete, step-by-step solution to build a console-based (Menu-Driven) Bank Account System in Salesforce to manage Customer records. It covers everything from database creation to the Apex backend logic, execution, and an optional user interface.
+# Bank Account System 
 
 ---
 
